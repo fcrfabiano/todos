@@ -26,6 +26,19 @@ function checksExistsUserAccount(request, response, next) {
     return next();
 }
 
+function checkExistsTodo(request, response, next) {
+  const { user } = request;
+  const { id } = request.params;
+
+  const todo = user.todos.find((todo) => todo.id === id);
+
+    if(!todo) {
+        return response.status(404).send({ error: "To Do not Found!" });
+    }
+
+    return next();
+}
+
 app.post('/users', (request, response) => {
   // Complete aqui
   const { name, username } = request.body;
@@ -90,25 +103,23 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   return response.status(201).send();
 });
 
-app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
+app.patch('/todos/:id/done', checksExistsUserAccount, checkExistsTodo, (request, response) => {
   // Complete aqui
-  const { user } = request;
+  const { user, todo } = request;
   const { id } = request.params;
 
   const getTodoID = user.todos.findIndex((todo) => todo.id === id);
+
   user.todos[getTodoID].done = true;
 
   return response.status(201).send();
 });
 
-app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
+app.delete('/todos/:id', checksExistsUserAccount, checkExistsTodo, (request, response) => {
   // Complete aqui
-  const { user } = request;
-  const { id } = request.params;
+  const { user, todo } = request;
 
-  const getTodoID = user.todos.findIndex((todo) => todo.id === id);
-
-  user.todos.splice(getTodoID, 1);
+  user.todos.splice(todo, 1);
 
   return response.status(200).json(user.todos);
 });
